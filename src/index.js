@@ -14,22 +14,22 @@ app.use(taskRouter)      //gives access to task router file
 //----------------------------------------------------------------------
 
 app.listen(port, () => {
-    console.log('Server is up you crazy mofo')
+    console.log('Server is up you crazy guy')
 })
 
 
-//----------------------------------------
-const bcrypt = require('bcryptjs')
+// //----------------------------------------
+// const bcrypt = require('bcryptjs')
 
-const myFunction = async () => {
- const pass = 'red12345!'
- const hashedPass = await bcrypt.hash(pass, 8)
+// const myFunction = async () => {
+//  const pass = 'red12345!'
+//  const hashedPass = await bcrypt.hash(pass, 8)
 
-    console.log(pass)
-    console.log(hashedPass)
+//     console.log(pass)
+//     console.log(hashedPass)
 
-    const isMatch = await bcrypt.compare('red12345!', hashedPass)
-    console.log(isMatch)
-}
+//     const isMatch = await bcrypt.compare('red12345!', hashedPass)
+//     console.log(isMatch)
+// }
 
-myFunction()
+// myFunction()

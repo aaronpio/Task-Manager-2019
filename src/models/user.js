@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
+        unique: true,
         required: true,
         trim: true,
         lowercase: true,
@@ -42,23 +43,26 @@ const userSchema = new mongoose.Schema({
     }
 })
 
-//-------------------
+//---------- Middleware to find email and verify password is correct ----------
 userSchema.statics.findByCredentials = async (email, password) => {
     const user = await User.findOne({email: email})
 
     if (!user) {
-        throw new Error('unable to login')
+        throw new Error('Unable to login')
     }
 
     const isMatch = await bcrypt.compare(password, user.password)
+
     if (!isMatch) {
-        throw new Error('Unable to login')
+        throw new Error('unable to login')
     }
+
+    return user
 
 }
 
 
-//------------------- set up middlewear for mongoose request -----------------
+//-------------- set up middlewear for save to mongoDB (hash the pw) ------------
 userSchema.pre('save', async function (next) {
     const user = this
 
@@ -68,6 +72,9 @@ userSchema.pre('save', async function (next) {
 
     next()  //needed to end function
 })
+
+
+//------------------------------------------------------
 
 const User = mongoose.model('User', userSchema)
 
