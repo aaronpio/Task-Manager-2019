@@ -63,7 +63,7 @@ userSchema.methods.generateAuthToken = async function () {
 }
 
 
-//---------- Middleware to find email and verify password is correct ----------
+//---------- Method to find email and verify password is correct ----------
 userSchema.statics.findByCredentials = async (email, password) => {
     const user = await User.findOne({email: email})
 
@@ -82,7 +82,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
 }
 
 
-//-------------- set up middlewear for save to mongoDB (hash the pw) ------------
+//-----------  middleware to save to mongoDB (hash the pw) ----------
 userSchema.pre('save', async function (next) {
     const user = this
 
@@ -94,7 +94,7 @@ userSchema.pre('save', async function (next) {
 })
 
 
-//------------------------------------------------------
+//----------------------------------------------------------
 
 const User = mongoose.model('User', userSchema)
 
