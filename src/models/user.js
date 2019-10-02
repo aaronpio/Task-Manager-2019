@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const Task = require('./task')
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -50,7 +51,24 @@ const userSchema = new mongoose.Schema({
     }]
 })
 
-//----------------- method to create authentication tokens -----------------
+//---------- for relationship between user and task file -----------
+
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner' 
+})
+
+//----------------- schema method to not return private user data -----------------
+userSchema.methods.toJSON = function() {
+    const user = this
+    const userObject = user.toObject()
+    delete userObject.password
+    delete userObject.tokens
+    return userObject
+}
+
+//----------------- schema method to create authentication tokens -----------------
 
 userSchema.methods.generateAuthToken = async function () {
     const user = this
@@ -63,7 +81,7 @@ userSchema.methods.generateAuthToken = async function () {
 }
 
 
-//---------- Method to find email and verify password is correct ----------
+//---------- schema Method to find email and verify password is correct ----------
 userSchema.statics.findByCredentials = async (email, password) => {
     const user = await User.findOne({email: email})
 
@@ -93,6 +111,14 @@ userSchema.pre('save', async function (next) {
     next()  //needed to end function
 })
 
+//----------- middleware to delete tasks when user removed -----------
+
+userSchema.pre('remove', async function (next) {
+    const user = this
+    await Task.deleteMany({ owner: user._id })
+    
+    next()
+})
 
 //----------------------------------------------------------
 

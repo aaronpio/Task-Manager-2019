@@ -31,6 +31,34 @@ router.post('/users/login', async (req, res) => {
     }
 })
 
+// ------------------------- Logout of user -------------------------
+
+router.post('/users/logout', auth, async (req, res) => {
+    try {
+        req.user.tokens = req.user.tokens.filter((token) => {     //filter method removes from array if doesn't match callback logic
+            return token.token !== req.token                     //returns true if not token we logged in with, keeps in array (removes token we logged in with)
+        })
+        await req.user.save()
+        res.send()
+    } catch (e) {
+        res.status(500).send()
+    }
+})
+
+//------------------------- Logout of all users -------------------------
+
+router.post('/users/logoutAll', auth, async (req, res) => {
+    
+    try {
+        req.user.tokens = []
+        await req.user.save()
+        res.send()
+    } catch (e) {
+        res.status(500).send()
+    }
+
+})
+
 // ------------------------- Read all users -------------------------
 router.get('/users/me', auth, async (req, res) => {
 
@@ -38,24 +66,8 @@ router.get('/users/me', auth, async (req, res) => {
     
 })
 
-// ------------------ Read one user by ID object --------------------
-router.get('/users/:id', async (req, res) => {
-    const _id = req.params.id
-
-    try {
-        const user = await User.findById(_id)
-        if (!user) {
-            return res.status(404).send()
-        }
-        res.send(user)
-    } catch (e) {
-        res.status(500).send()
-    }
-    
-})
-
 // ---------------- Update one user by ID object ------------------
-router.patch('/users/:id', async (req, res) => {
+router.patch('/users/me', auth, async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['name', 'email', 'password', 'age']
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
@@ -65,14 +77,10 @@ router.patch('/users/:id', async (req, res) => {
     }
 
         try{
-            const user = await User.findById(req.params.id)
-            updates.forEach((update) => user[update] = req.body[update])
-            await user.save()                                               //allows for middleware to run (to do password hashing)
+            updates.forEach((update) => req.user[update] = req.body[update])
+            await req.user.save()                                               //allows for middleware to run (to do password hashing)
             
-            if (!user) {
-                return res.status(404).send()
-            }
-            res.send(user)
+            res.send(req.user)
         } catch (e) {
             res.status(400).send(e)
         }
@@ -80,13 +88,12 @@ router.patch('/users/:id', async (req, res) => {
 })
 
 // ----------------- Delete one user by ID object -------------------
-router.delete('/users/:id', async (req, res) => {
+router.delete('/users/me', auth, async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id)
-        if (!user) {
-            return res.status(404).send()
-        }
-        res.send(user)
+               
+        await req.user.remove()
+        res.send(req.user)
+
     } catch (e) {
         res.status(500).send()
     }
